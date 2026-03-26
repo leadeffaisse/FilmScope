@@ -42,7 +42,7 @@ function toggleFavorite() {
 
     <!-- @click.stop : empêche le clic de remonter vers la div parente -->
     <!-- Bouton favoris — stoppe la propagation du clic -->
-    <button class="fav-btn" :class="{ active: isFav }" @click.stop="toggleFavorite">
+    <button class="fav-btn" @click.stop="toggleFavorite">
       {{ isFav ? '❤️' : '🤍' }}
     </button>
   </div>

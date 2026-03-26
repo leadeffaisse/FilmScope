@@ -18,16 +18,20 @@
         v-for="film in filteredFilms"
         :key="film.id"
         :film="film"
-        @toggle-favorite="handleToggleFavorite"
+        :is-fav="favoriteStore.isFavorite(film.id)"
+        @toggle-favorite="favoriteStore.toggleFavorite"
       />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
 import FilmCard from '@/components/FilmCard.vue'
+import { useFavoriteStore } from '@/stores/favoriteStore.js'
+
+const favoriteStore = useFavoriteStore()
 
 // ref() sur une string - la valeur initiale est une chaîne vide
 const searchQuery = ref('')
@@ -51,10 +55,9 @@ const filteredFilms = computed(() => {
   )
 })
 
-// Le parent reçoit le film émis par FilmCard et décide quoi en faire
-function handleToggleFavorite(film) {
-  console.log('toggle favori :', film.title)
-}
+onMounted(() => {
+  favoriteStore.initStore() // restaure les favoris depuis localStorage
+})
 </script>
 
 <style scoped>
