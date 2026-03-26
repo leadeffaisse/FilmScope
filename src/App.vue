@@ -2,8 +2,8 @@
   <div class="app">
     <h1>🎬 FilmScope</h1>
 
-    <!-- v-model lie l'input à searchQuery dans les deux sens -->
-    <input v-model="searchQuery" placeholder="Rechercher un film..." class="search-input" />
+    <!-- v-model fonctionne grâce au pattern modelValue dans SearchBar -->
+    <SearchBar v-model="searchQuery" />
 
     <!-- Nombre de résultats — se met à jour automatiquement -->
     <p>{{ filteredFilms.length }} film(s) trouvé(s)</p>
@@ -12,16 +12,25 @@
     <p v-if="filteredFilms.length === 0">Aucun résultat pour "{{ searchQuery }}"</p>
 
     <div v-else class="film-grid">
-      <div v-for="film in filteredFilms" :key="film.id" class="film-card">
-        <h3>{{ film.title }}</h3>
-        <p>{{ film.year }} — ⭐ {{ film.rating }}</p>
-      </div>
+      <!-- :film passe le film en prop -->
+      <!-- @toggle-favorite écoute l'événement émis par FilmCard -->
+      <FilmCard
+        v-for="film in filteredFilms"
+        :key="film.id"
+        :film="film"
+        @toggle-favorite="handleToggleFavorite"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import SearchBar from '@/components/SearchBar.vue'
+import FilmCard from '@/components/FilmCard.vue'
+
+// ref() sur une string - la valeur initiale est une chaîne vide
+const searchQuery = ref('')
 
 const allFilms = ref([
   { id: 1, title: 'Dune', year: 2001, rating: 7.8 },
@@ -29,9 +38,6 @@ const allFilms = ref([
   { id: 3, title: 'France', year: 2003, rating: 7.8 },
   { id: 4, title: 'Science', year: 2004, rating: 7.8 },
 ])
-
-// ref() sur une string - la valeur initiale est une chaîne vide
-const searchQuery = ref('')
 
 // computed() : recalculé automatiquement quand searchQuery ou allFilms changent
 // Lecture seule — on ne fait jamais filteredFilms.value = quelquechose
@@ -44,6 +50,11 @@ const filteredFilms = computed(() => {
     film.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
   )
 })
+
+// Le parent reçoit le film émis par FilmCard et décide quoi en faire
+function handleToggleFavorite(film) {
+  console.log('toggle favori :', film.title)
+}
 </script>
 
 <style scoped>
