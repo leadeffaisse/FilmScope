@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import StarRating from '@/components/StarRating.vue'
+import { getPosterUrl } from '@/services/tmdbService.js'
 
 // defineProps : déclare ce que le parent doit passer
 // Le parent écrira : <FilmCard :film="unFilm" />
@@ -32,12 +33,12 @@ function toggleFavorite() {
 
 <template>
   <div class="film-card" @click="goToDetail">
-    <img :src="'https://placehold.co/200x300'" :alt="film.title" class="film-poster" />
+    <img :src="getPosterUrl(film.poster_path)" :alt="film.title" class="film-poster" />
 
     <div class="film-info">
       <h3>{{ film.title }}</h3>
-      <p>{{ film.year }} — ⭐ {{ film.rating }}</p>
-      <StarRating :score="film.rating" />
+      <p>{{ film.release_date?.slice(0, 4) }}</p>
+      <StarRating :score="film.vote_average" />
     </div>
 
     <!-- @click.stop : empêche le clic de remonter vers la div parente -->
@@ -54,11 +55,32 @@ function toggleFavorite() {
   border-radius: 8px;
   padding: 1rem;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
+
+.film-poster {
+  width: 100%;
+  height: 260px; /* hauteur fixe — ajuste selon ton goût */
+  object-fit: cover; /* recadre sans déformer */
+  border-radius: 4px;
+}
+
+.film-info {
+  flex: 1;
+}
+
+.film-info h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
 .fav-btn {
   background: none;
   border: none;
   font-size: 1.2rem;
   cursor: pointer;
+  align-self: flex-end;
 }
 </style>

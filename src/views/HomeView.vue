@@ -3,19 +3,22 @@
     <h1>🎬 FilmScope</h1>
 
     <!-- v-model fonctionne grâce au pattern modelValue dans SearchBar -->
-    <SearchBar v-model="searchQuery" />
+    <div class="controls">
+      <SearchBar v-model="searchQuery" />
+    </div>
 
-    <!-- Nombre de résultats — se met à jour automatiquement -->
-    <p>{{ filteredFilms.length }} film(s) trouvé(s)</p>
+    <div v-if="isLoading">Chargement...</div>
 
-    <!-- v-if sur filteredFilms pour le message "aucun résultat" -->
-    <p v-if="filteredFilms.length === 0">Aucun résultat pour "{{ searchQuery }}"</p>
+    <div v-else-if="error">
+      {{ error }}
+      <button @click="loadPopularFilms">Réessayer</button>
+    </div>
 
     <div v-else class="film-grid">
       <!-- :film passe le film en prop -->
       <!-- @toggle-favorite écoute l'événement émis par FilmCard -->
       <FilmCard
-        v-for="film in filteredFilms"
+        v-for="film in displayedFilms"
         :key="film.id"
         :film="film"
         :is-fav="favoriteStore.isFavorite(film.id)"
@@ -26,36 +29,55 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
 import FilmCard from '@/components/FilmCard.vue'
 import { useFavoriteStore } from '@/stores/favoriteStore.js'
+import { getPopularFilms, searchFilms } from '@/services/tmdbService.js'
 
 const favoriteStore = useFavoriteStore()
 
 // ref() sur une string - la valeur initiale est une chaîne vide
 const searchQuery = ref('')
+const popularFilms = ref([])
+const searchResults = ref([])
+const isLoading = ref(false)
+const error = ref(null)
 
-const allFilms = ref([
-  { id: 1, title: 'Dune', year: 2001, rating: 7.8 },
-  { id: 2, title: 'East', year: 2002, rating: 3.8 },
-  { id: 3, title: 'France', year: 2003, rating: 5.8 },
-  { id: 4, title: 'Science', year: 2004, rating: 1.8 },
-])
+// Affiche les résultats de recherche sinon les films populaires
+const displayedFilms = computed(() =>
+  searchQuery.value ? searchResults.value : popularFilms.value,
+)
 
-// computed() : recalculé automatiquement quand searchQuery ou allFilms changent
-// Lecture seule — on ne fait jamais filteredFilms.value = quelquechose
-const filteredFilms = computed(() => {
-  // Si la recherche est vide, on retourne tout
-  if (!searchQuery.value) return allFilms.value
+async function loadPopularFilms() {
+  isLoading.value = true
+  error.value = null
+  try {
+    popularFilms.value = await getPopularFilms()
+  } catch (e) {
+    error.value = 'Impossible de charger les films.'
+  } finally {
+    isLoading.value = false
+  }
+}
 
-  // Sinon, on filtre (insensible à la casse)
-  return allFilms.value.filter((film) =>
-    film.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
-  )
+watch(searchQuery, async (newQuery) => {
+  if (!newQuery) {
+    searchResults.value = []
+    return
+  }
+  isLoading.value = true
+  try {
+    searchResults.value = await searchFilms(newQuery)
+  } catch (e) {
+    error.value = 'Erreur lors de la recherche.'
+  } finally {
+    isLoading.value = false
+  }
 })
 
 onMounted(() => {
+  loadPopularFilms()
   favoriteStore.initStore() // restaure les favoris depuis localStorage
 })
 </script>
@@ -63,8 +85,21 @@ onMounted(() => {
 <style scoped>
 .app {
   font-family: Arial, sans-serif;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.film-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
 }
 </style>

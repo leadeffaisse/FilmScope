@@ -1,0 +1,30 @@
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_TMDB_BASE_URL,
+  params: {
+    api_key: import.meta.env.VITE_TMDB_API_KEY,
+    language: 'fr',
+  },
+})
+
+export async function getPopularFilms(page = 1) {
+  const { data } = await api.get('/movie/popular', { params: { page } })
+  return data.results
+}
+
+export async function searchFilms(query) {
+  if (!query.trim()) return []
+  const { data } = await api.get('/search/movie', { params: { query } })
+  return data.results
+}
+
+export async function getFilmDetail(id) {
+  const { data } = await api.get(`/movie/${id}`, { params: { id } })
+  return data
+}
+
+export function getPosterUrl(posterPath) {
+  if (!posterPath) return null
+  return `${import.meta.env.VITE_TMDB_IMAGE_URL}${posterPath}`
+}
