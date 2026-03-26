@@ -12,16 +12,16 @@ const film = ref(null)
 // Données mock dupliquées pour cette partie du kit
 const allFilms = [
   { id: 1, title: 'Dune', year: 2001, rating: 7.8 },
-  { id: 2, title: 'East', year: 2002, rating: 7.8 },
-  { id: 3, title: 'France', year: 2003, rating: 7.8 },
-  { id: 4, title: 'Science', year: 2004, rating: 7.8 },
+  { id: 2, title: 'East', year: 2002, rating: 3.8 },
+  { id: 3, title: 'France', year: 2003, rating: 5.8 },
+  { id: 4, title: 'Science', year: 2004, rating: 1.8 },
 ]
 
 onMounted(() => {
   // route.params.id est une string — Number() pour comparer avec les ids numériques
   const id = Number(route.params.id)
   // chercher dans les données mock
-  film.value = allFilms.find(f => f.id === id) ?? null
+  film.value = allFilms.find((f) => f.id === id) ?? null
 })
 </script>
 

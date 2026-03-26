@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import StarRating from '@/components/StarRating.vue'
 
 // defineProps : déclare ce que le parent doit passer
 // Le parent écrira : <FilmCard :film="unFilm" />
@@ -36,6 +37,7 @@ function toggleFavorite() {
     <div class="film-info">
       <h3>{{ film.title }}</h3>
       <p>{{ film.year }} — ⭐ {{ film.rating }}</p>
+      <StarRating :score="film.rating" />
     </div>
 
     <!-- @click.stop : empêche le clic de remonter vers la div parente -->
